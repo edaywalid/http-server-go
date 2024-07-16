@@ -3,8 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"mime"
 	"net"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 func main() {
@@ -47,4 +50,30 @@ func handleRequest(conn net.Conn) {
 		return
 	}
 
+	requestedFile := strings.Fields(requestLine)[1]
+	if requestedFile == "/" {
+		requestedFile = "/index.html"
+	}
+
+	requestedFile = "." + filepath.Clean(requestedFile)
+
+	if _, err := os.Stat(requestedFile); os.IsNotExist(err) {
+		conn.Write([]byte("HTTP/1.1 404 Not Found\r\n\r\n"))
+		return
+	}
+
+	fileContent, err := os.ReadFile(requestedFile)
+	if err != nil {
+		fmt.Println("Error reading file: ", err.Error())
+		conn.Write([]byte("HTTP/1.1 500 Internal Server Error\r\n\r\n"))
+		return
+	}
+
+	contentType := mime.TypeByExtension(filepath.Ext(requestedFile))
+	if contentType == "" {
+		contentType = "application/octet-stream"
+	}
+
+	fmt.Fprintf(conn, "HTTP/1.1 200 OK\r\nContent-Type: %s\r\n\r\n", contentType)
+	conn.Write(fileContent)
 }
