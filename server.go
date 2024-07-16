@@ -31,4 +31,12 @@ func main() {
 
 func handleRequest(conn net.Conn) {
 	defer conn.Close()
+
+	req := make([]byte, 1024)
+	_, err := conn.Read(req)
+	if err != nil {
+		fmt.Println("Error reading request: ", err.Error())
+		return
+	}
+
 }
