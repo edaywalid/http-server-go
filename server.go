@@ -25,6 +25,10 @@ func main() {
 			fmt.Println("Error accepting connection: ", err.Error())
 			continue
 		}
-
+		go handleRequest(conn)
 	}
+}
+
+func handleRequest(conn net.Conn) {
+	defer conn.Close()
 }
