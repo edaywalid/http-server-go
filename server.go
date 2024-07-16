@@ -39,4 +39,12 @@ func handleRequest(conn net.Conn) {
 		return
 	}
 
+	requestLine := strings.SplitN(string(req), "\r\n", 2)[0]
+	fmt.Println("Request line:", requestLine)
+	if !strings.HasPrefix(requestLine, "GET ") {
+		fmt.Println("Invalid request method")
+		conn.Write([]byte("HTTP/1.1 400 Bad Request\r\n\r\n"))
+		return
+	}
+
 }
